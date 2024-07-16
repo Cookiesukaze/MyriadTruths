@@ -23,6 +23,10 @@ def load_config():
         config.add_section('behavior')
         config.set('behavior', 'auto_switch_interval', '5')
 
+    if 'files' not in config:
+        config.add_section('files')
+        config.set('files', 'folder_path', os.path.abspath('.'))
+
     return config
 
 
@@ -34,12 +38,12 @@ def save_config(config):
 def get_folder_path(config):
     folder_path = config.get('files', 'folder_path', fallback=None)
     if folder_path is not None:
-        folder_path = folder_path.encode('utf-8').decode('utf-8')
+        folder_path = os.path.abspath(folder_path.encode('utf-8').decode('utf-8'))
     return folder_path
 
 
 def set_folder_path(config, folder_path):
-    config.set('files', 'folder_path', folder_path)
+    config.set('files', 'folder_path', os.path.abspath(folder_path))
     save_config(config)
 
 

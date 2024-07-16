@@ -95,7 +95,10 @@ class SettingsWindow(tk.Toplevel):
         secondary_font = self.font_secondary_family.get()
         secondary_font_size = int(self.font_secondary_size.get())
 
-        set_folder_path(self.config, self.folder_path_entry.get())
+        # 获取文件夹路径并转换为绝对路径
+        folder_path = os.path.abspath(self.folder_path_entry.get())
+
+        set_folder_path(self.config, folder_path)
         set_display_fonts(self.config, f"{primary_font} {primary_font_size}", f"{secondary_font} {secondary_font_size}")
         self.config.set('colors', 'background', self.bg_color_button.cget('bg'))
         self.config.set('colors', 'foreground', self.fg_color_button.cget('fg'))
