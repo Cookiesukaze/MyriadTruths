@@ -2,7 +2,8 @@ import tkinter as tk
 import signal
 from config.config import (
     load_config, get_folder_path, get_display_fonts, get_display_mode,
-    get_auto_switch_interval, get_pause_on_click, set_window_geometry, get_window_geometry
+    get_auto_switch_interval, get_pause_on_click, set_folder_path,
+    set_display_fonts, save_config, set_display_mode, set_window_geometry, get_window_geometry
 )
 from gui.settings_window import SettingsWindow
 from utils.window_utils import add_drag_functionality, add_resize_handles
@@ -40,8 +41,8 @@ class MyriadTruthsApp(tk.Tk):
         self.text_area.bind("<Button-1>", self.toggle_pause)
         self.text_area.bind("<Button-3>", self.show_context_menu)
 
-        self.text_area.tag_configure('primary', font=self.font_primary)
-        self.text_area.tag_configure('secondary', font=self.font_secondary)
+        self.text_area.tag_configure('primary', font=self.parse_font(self.font_primary) or 'Arial 16')
+        self.text_area.tag_configure('secondary', font=self.parse_font(self.font_secondary) or 'Arial 12')
 
         self.context_menu = tk.Menu(self, tearoff=0)
         self.context_menu.add_command(label="设置", command=self.open_settings)
@@ -67,6 +68,13 @@ class MyriadTruthsApp(tk.Tk):
         # 绑定调整窗口大小的事件
         self.bind("<Enter>", lambda event: add_resize_handles(self))
 
+    def parse_font(self, font_str):
+        parts = font_str.rsplit(' ', 1)
+        if len(parts) == 2:
+            font_name, font_size = parts
+            return (font_name, int(font_size))
+        return font_str
+
     def load_files(self):
         self.files_content = load_files(self.folder_path)
 
@@ -89,16 +97,42 @@ class MyriadTruthsApp(tk.Tk):
             self.next_content()
 
     def previous_content(self):
-        if self.files_content:
-            self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
-            self.current_line_index = 0
-            self.display_current_content()
+        if self.display_mode == 'single_line':
+            lines_per_display = self.config.getint('display', 'lines_per_display', fallback=1)
+            self.current_line_index -= lines_per_display
+            if self.current_line_index < 0:
+                self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
+                self.current_line_index = len(self.files_content[self.current_file_index][1]) - lines_per_display
+        elif self.display_mode == 'double_line':
+            self.current_line_index -= 2
+            if self.current_line_index < 0:
+                self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
+                self.current_line_index = len(self.files_content[self.current_file_index][1]) - 2
+        elif self.display_mode == 'double_line_mixed_font':
+            self.current_line_index -= 1
+            if self.current_line_index < 0:
+                self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
+                self.current_line_index = len(self.files_content[self.current_file_index][1]) - 1
+        self.display_current_content()
 
     def next_content(self):
-        if self.files_content:
-            self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
-            self.current_line_index = 0
-            self.display_current_content()
+        if self.display_mode == 'single_line':
+            lines_per_display = self.config.getint('display', 'lines_per_display', fallback=1)
+            self.current_line_index += lines_per_display
+            if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                self.current_line_index = 0
+                self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+        elif self.display_mode == 'double_line':
+            self.current_line_index += 2
+            if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                self.current_line_index = 0
+                self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+        elif self.display_mode == 'double_line_mixed_font':
+            self.current_line_index += 1
+            if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                self.current_line_index = 0
+                self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+        self.display_current_content()
 
     def show_context_menu(self, event):
         self.context_menu.post(event.x_root, event.y_root)
@@ -118,8 +152,8 @@ class MyriadTruthsApp(tk.Tk):
         self.opacity = self.config.getfloat('colors', 'opacity', fallback=1.0)
 
         self.text_area.config(bg=self.bg_color, fg=self.fg_color)
-        self.text_area.tag_configure('primary', font=self.font_primary)
-        self.text_area.tag_configure('secondary', font=self.font_secondary)
+        self.text_area.tag_configure('primary', font=self.parse_font(self.font_primary) or 'Arial 16')
+        self.text_area.tag_configure('secondary', font=self.parse_font(self.font_secondary) or 'Arial 12')
         self.attributes('-alpha', self.opacity)
         self.load_files()
         self.display_current_content()
