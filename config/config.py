@@ -32,6 +32,10 @@ def set_display_fonts(config, font_primary, font_secondary):
     config.set('display', 'font_secondary', font_secondary)
     save_config(config)
 
+def set_display_mode(config, mode):
+    config.set('display', 'mode', mode)
+    save_config(config)
+
 def get_display_mode(config):
     mode = config.get('display', 'mode', fallback='single_line')
     return mode
@@ -43,3 +47,4 @@ def get_auto_switch_interval(config):
 def get_pause_on_click(config):
     pause_on_click = config.getboolean('behavior', 'pause_on_click', fallback=True)
     return pause_on_click
+

@@ -4,7 +4,7 @@ from tkinter import font, simpledialog, colorchooser
 from config.config import (
     load_config, get_folder_path, get_display_fonts, get_display_mode,
     get_auto_switch_interval, get_pause_on_click, set_folder_path,
-    set_display_fonts, save_config
+    set_display_fonts, save_config, set_display_mode
 )
 from utils.file_utils import load_files_from_folder
 
@@ -17,7 +17,6 @@ class MyriadTruthsApp(tk.Tk):
         self.config = load_config()
 
         self.folder_path = get_folder_path(self.config)
-        print(f"读取到的文件夹路径: {self.folder_path}")
         self.font_primary, self.font_secondary = get_display_fonts(self.config)
         self.display_mode = get_display_mode(self.config)
         self.auto_switch_interval = get_auto_switch_interval(self.config)
@@ -61,24 +60,35 @@ class MyriadTruthsApp(tk.Tk):
             for line in content[self.current_line_index:self.current_line_index+lines_per_display]:
                 self.text_area.insert(tk.END, line + '\n')
         elif mode == 'double_line':
-            for line in content[self.current_line_index:]:
-                parts = line.split('\t')
-                if len(parts) >= 2:
-                    self.text_area.insert(tk.END, parts[0] + '\n')
-                    self.text_area.insert(tk.END, parts[1] + '\n')
+            if self.current_line_index < len(content):
+                self.text_area.insert(tk.END, content[self.current_line_index] + '\n')
+            if self.current_line_index + 1 < len(content):
+                self.text_area.insert(tk.END, content[self.current_line_index + 1] + '\n')
         elif mode == 'double_line_mixed_font':
-            for line in content[self.current_line_index:]:
-                parts = line.split('\t')
+            if self.current_line_index < len(content):
+                parts = content[self.current_line_index].split('\t')
                 if len(parts) >= 2:
                     self.text_area.insert(tk.END, parts[0] + '\n', ('font', self.font_primary))
                     self.text_area.insert(tk.END, parts[1] + '\n', ('font', self.font_secondary))
 
     def switch_content(self):
         if not self.is_paused:
-            self.current_line_index += 1
-            if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
-                self.current_line_index = 0
-                self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+            if self.display_mode == 'single_line':
+                lines_per_display = self.config.getint('display', 'lines_per_display', fallback=1)
+                self.current_line_index += lines_per_display
+                if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                    self.current_line_index = 0
+                    self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+            elif self.display_mode == 'double_line':
+                self.current_line_index += 2
+                if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                    self.current_line_index = 0
+                    self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+            elif self.display_mode == 'double_line_mixed_font':
+                self.current_line_index += 1
+                if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                    self.current_line_index = 0
+                    self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
             self.display_current_content()
         self.after(self.auto_switch_interval * 1000, self.switch_content)
 
@@ -93,17 +103,41 @@ class MyriadTruthsApp(tk.Tk):
             self.next_content()
 
     def previous_content(self):
-        self.current_line_index -= 1
-        if self.current_line_index < 0:
-            self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
-            self.current_line_index = len(self.files_content[self.current_file_index][1]) - 1
+        if self.display_mode == 'single_line':
+            lines_per_display = self.config.getint('display', 'lines_per_display', fallback=1)
+            self.current_line_index -= lines_per_display
+            if self.current_line_index < 0:
+                self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
+                self.current_line_index = len(self.files_content[self.current_file_index][1]) - lines_per_display
+        elif self.display_mode == 'double_line':
+            self.current_line_index -= 2
+            if self.current_line_index < 0:
+                self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
+                self.current_line_index = len(self.files_content[self.current_file_index][1]) - 2
+        elif self.display_mode == 'double_line_mixed_font':
+            self.current_line_index -= 1
+            if self.current_line_index < 0:
+                self.current_file_index = (self.current_file_index - 1) % len(self.files_content)
+                self.current_line_index = len(self.files_content[self.current_file_index][1]) - 1
         self.display_current_content()
 
     def next_content(self):
-        self.current_line_index += 1
-        if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
-            self.current_line_index = 0
-            self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+        if self.display_mode == 'single_line':
+            lines_per_display = self.config.getint('display', 'lines_per_display', fallback=1)
+            self.current_line_index += lines_per_display
+            if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                self.current_line_index = 0
+                self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+        elif self.display_mode == 'double_line':
+            self.current_line_index += 2
+            if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                self.current_line_index = 0
+                self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
+        elif self.display_mode == 'double_line_mixed_font':
+            self.current_line_index += 1
+            if self.current_line_index >= len(self.files_content[self.current_file_index][1]):
+                self.current_line_index = 0
+                self.current_file_index = (self.current_file_index + 1) % len(self.files_content)
         self.display_current_content()
 
     def show_context_menu(self, event):
@@ -147,7 +181,13 @@ class SettingsWindow(tk.Toplevel):
         self.opacity_scale.grid(row=5, column=1, sticky=tk.EW)
         self.opacity_scale.set(config.getfloat('colors', 'opacity', fallback=1.0))
 
-        tk.Button(self, text="保存", command=self.save_settings).grid(row=6, column=0, columnspan=2, sticky=tk.EW)
+        tk.Label(self, text="显示模式:").grid(row=6, column=0, sticky=tk.W)
+        self.mode_var = tk.StringVar(value=get_display_mode(config))
+        self.mode_options = {"单行显示": "single_line", "双行显示": "double_line", "双行混合字体显示": "double_line_mixed_font"}
+        self.mode_menu = tk.OptionMenu(self, self.mode_var, *self.mode_options.keys())
+        self.mode_menu.grid(row=6, column=1, sticky=tk.EW)
+
+        tk.Button(self, text="保存", command=self.save_settings).grid(row=7, column=0, columnspan=2, sticky=tk.EW)
 
         self.grid_columnconfigure(1, weight=1)
 
@@ -167,6 +207,7 @@ class SettingsWindow(tk.Toplevel):
         self.config.set('colors', 'background', self.bg_color_button.cget('bg'))
         self.config.set('colors', 'foreground', self.fg_color_button.cget('fg'))
         self.config.set('colors', 'opacity', str(self.opacity_scale.get()))
+        set_display_mode(self.config, self.mode_options.get(self.mode_var.get(), 'single_line'))
         save_config(self.config)
         self.destroy()
 
