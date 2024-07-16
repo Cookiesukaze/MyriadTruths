@@ -144,29 +144,42 @@ class MyriadTruthsApp(tk.Tk):
         self.context_menu.post(event.x_root, event.y_root)
 
     def open_settings(self):
-        SettingsWindow(self, self.config)
+        SettingsWindow(self)
+
+    def apply_settings(self, config):
+        self.config = config
+        self.folder_path = get_folder_path(self.config)
+        self.font_primary, self.font_secondary = get_display_fonts(self.config)
+        self.display_mode = get_display_mode(self.config)
+        self.auto_switch_interval = get_auto_switch_interval(self.config)
+        self.pause_on_click = get_pause_on_click(self.config)
+
+        self.text_area.config(font=self.font_primary)
+        self.load_files()
+        self.display_current_content()
 
 class SettingsWindow(tk.Toplevel):
-    def __init__(self, parent, config):
+    def __init__(self, parent):
         super().__init__(parent)
         self.title("设置")
         self.geometry("400x300")
-        self.config = config
+        self.parent = parent
+        self.config = parent.config
 
         tk.Label(self, text="文件夹路径:").grid(row=0, column=0, sticky=tk.W)
         self.folder_path_entry = tk.Entry(self)
         self.folder_path_entry.grid(row=0, column=1, sticky=tk.EW)
-        self.folder_path_entry.insert(0, get_folder_path(config))
+        self.folder_path_entry.insert(0, get_folder_path(self.config))
 
         tk.Label(self, text="主字体:").grid(row=1, column=0, sticky=tk.W)
         self.font_primary_entry = tk.Entry(self)
         self.font_primary_entry.grid(row=1, column=1, sticky=tk.EW)
-        self.font_primary_entry.insert(0, get_display_fonts(config)[0])
+        self.font_primary_entry.insert(0, get_display_fonts(self.config)[0])
 
         tk.Label(self, text="次字体:").grid(row=2, column=0, sticky=tk.W)
         self.font_secondary_entry = tk.Entry(self)
         self.font_secondary_entry.grid(row=2, column=1, sticky=tk.EW)
-        self.font_secondary_entry.insert(0, get_display_fonts(config)[1])
+        self.font_secondary_entry.insert(0, get_display_fonts(self.config)[1])
 
         tk.Label(self, text="背景颜色:").grid(row=3, column=0, sticky=tk.W)
         self.bg_color_button = tk.Button(self, text="选择颜色", command=self.choose_bg_color)
@@ -179,10 +192,10 @@ class SettingsWindow(tk.Toplevel):
         tk.Label(self, text="透明度:").grid(row=5, column=0, sticky=tk.W)
         self.opacity_scale = tk.Scale(self, from_=0.1, to=1.0, resolution=0.1, orient=tk.HORIZONTAL)
         self.opacity_scale.grid(row=5, column=1, sticky=tk.EW)
-        self.opacity_scale.set(config.getfloat('colors', 'opacity', fallback=1.0))
+        self.opacity_scale.set(self.config.getfloat('colors', 'opacity', fallback=1.0))
 
         tk.Label(self, text="显示模式:").grid(row=6, column=0, sticky=tk.W)
-        self.mode_var = tk.StringVar(value=get_display_mode(config))
+        self.mode_var = tk.StringVar(value=get_display_mode(self.config))
         self.mode_options = {"单行显示": "single_line", "双行显示": "double_line", "双行混合字体显示": "double_line_mixed_font"}
         self.mode_menu = tk.OptionMenu(self, self.mode_var, *self.mode_options.keys())
         self.mode_menu.grid(row=6, column=1, sticky=tk.EW)
@@ -209,6 +222,7 @@ class SettingsWindow(tk.Toplevel):
         self.config.set('colors', 'opacity', str(self.opacity_scale.get()))
         set_display_mode(self.config, self.mode_options.get(self.mode_var.get(), 'single_line'))
         save_config(self.config)
+        self.parent.apply_settings(self.config)
         self.destroy()
 
 if __name__ == "__main__":
