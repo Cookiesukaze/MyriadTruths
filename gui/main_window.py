@@ -32,14 +32,27 @@ class MyriadTruthsApp(tk.Tk):
         self.overrideredirect(True)  # 去掉顶栏
         self.attributes("-topmost", self.always_on_top)  # 设置窗口置顶
 
-        # 添加可拖动的顶部条
-        self.top_bar = tk.Frame(self, bg='gray', height=20, cursor='fleur')
+        # 添加可拖动的顶部条，调整高度为 15
+        self.top_bar = tk.Frame(self, bg='gray', height=10, cursor='fleur')
         self.top_bar.pack(fill=tk.X)
         add_drag_functionality(self, self.top_bar)
 
-        # 添加暂停标签
+        # 定义一个小字体
+        small_font = ('Arial', 8)
+
+        # 添加回滚和前进按钮
+        self.prev_button = tk.Button(self.top_bar, text="<", command=self.previous_content,
+                                     bg='gray', fg='white', relief=tk.FLAT,
+                                     font=small_font, pady=0, padx=0)
+        self.prev_button.pack(side=tk.LEFT, padx=2, pady=0)
+
         self.pause_label = tk.Label(self.top_bar, text="", bg='gray', fg='white')
         self.pause_label.pack(side=tk.LEFT, padx=8)
+
+        self.next_button = tk.Button(self.top_bar, text=">", command=self.next_content,
+                                     bg='gray', fg='white', relief=tk.FLAT,
+                                     font=small_font, pady=0, padx=0)
+        self.next_button.pack(side=tk.RIGHT, padx=2, pady=0)
 
         # 添加文本区域
         self.text_area = tk.Text(self, wrap=tk.WORD, bg=self.bg_color, fg=self.fg_color)
