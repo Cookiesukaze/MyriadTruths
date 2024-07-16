@@ -3,7 +3,8 @@ from tkinter import font, colorchooser, filedialog
 import os
 from config.config import (
     get_folder_path, get_display_fonts, get_display_mode, set_folder_path,
-    set_display_fonts, save_config, set_display_mode
+    set_display_fonts, save_config, set_display_mode, get_auto_switch_interval, set_auto_switch_interval,
+    get_always_on_top, set_always_on_top
 )
 
 COMMON_FONTS = ["Arial", "微软雅黑", "Times New Roman", "等线", "Lucida Console"]
@@ -12,7 +13,7 @@ class SettingsWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("设置")
-        self.geometry("400x500")
+        self.geometry("400x600")
         self.parent = parent
         self.config = parent.config
 
@@ -60,7 +61,15 @@ class SettingsWindow(tk.Toplevel):
         self.mode_menu = tk.OptionMenu(self, self.mode_var, *self.mode_options.keys())
         self.mode_menu.grid(row=8, column=1, columnspan=2, sticky=tk.EW)
 
-        tk.Button(self, text="保存", command=self.save_settings).grid(row=9, column=0, columnspan=3, sticky=tk.EW)
+        self.always_on_top = tk.BooleanVar(value=get_always_on_top(self.config))
+        tk.Checkbutton(self, text="窗口置顶", variable=self.always_on_top).grid(row=9, column=0, columnspan=3, sticky=tk.W)
+
+        tk.Label(self, text="自动切换时间 (秒):").grid(row=10, column=0, sticky=tk.W)
+        self.auto_switch_interval = tk.StringVar(value=str(get_auto_switch_interval(self.config)))
+        self.auto_switch_interval_entry = tk.Entry(self, textvariable=self.auto_switch_interval)
+        self.auto_switch_interval_entry.grid(row=10, column=1, columnspan=2, sticky=tk.EW)
+
+        tk.Button(self, text="保存", command=self.save_settings).grid(row=11, column=0, columnspan=3, sticky=tk.EW)
 
         self.grid_columnconfigure(1, weight=1)
 
@@ -92,6 +101,8 @@ class SettingsWindow(tk.Toplevel):
         self.config.set('colors', 'foreground', self.fg_color_button.cget('fg'))
         self.config.set('colors', 'opacity', str(self.opacity_scale.get()))
         set_display_mode(self.config, self.mode_options.get(self.mode_var.get(), 'single_line'))
+        set_always_on_top(self.config, self.always_on_top.get())
+        set_auto_switch_interval(self.config, int(self.auto_switch_interval.get()))
         save_config(self.config)
         self.parent.apply_settings(self.config)
         self.destroy()

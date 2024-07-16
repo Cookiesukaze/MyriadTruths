@@ -3,7 +3,7 @@ import signal
 from config.config import (
     load_config, get_folder_path, get_display_fonts, get_display_mode,
     get_auto_switch_interval, get_pause_on_click, set_folder_path,
-    set_display_fonts, save_config, set_display_mode, set_window_geometry, get_window_geometry
+    set_display_fonts, save_config, set_display_mode, set_window_geometry, get_window_geometry, get_always_on_top
 )
 from gui.settings_window import SettingsWindow
 from utils.window_utils import add_drag_functionality, add_resize_handles
@@ -24,16 +24,22 @@ class MyriadTruthsApp(tk.Tk):
         self.bg_color = self.config.get('colors', 'background', fallback='white')
         self.fg_color = self.config.get('colors', 'foreground', fallback='black')
         self.opacity = self.config.getfloat('colors', 'opacity', fallback=1.0)
+        self.always_on_top = get_always_on_top(self.config)
 
         # 设置窗口几何位置和大小
         geometry = get_window_geometry(self.config)
         self.geometry(geometry)
         self.overrideredirect(True)  # 去掉顶栏
+        self.attributes("-topmost", self.always_on_top)  # 设置窗口置顶
 
         # 添加可拖动的顶部条
         self.top_bar = tk.Frame(self, bg='gray', height=20, cursor='fleur')
         self.top_bar.pack(fill=tk.X)
         add_drag_functionality(self, self.top_bar)
+
+        # 添加暂停标签
+        self.pause_label = tk.Label(self.top_bar, text="", bg='gray', fg='white')
+        self.pause_label.pack(side=tk.LEFT, padx=8)
 
         # 添加文本区域
         self.text_area = tk.Text(self, wrap=tk.WORD, bg=self.bg_color, fg=self.fg_color)
@@ -79,16 +85,18 @@ class MyriadTruthsApp(tk.Tk):
         self.files_content = load_files(self.folder_path)
 
     def display_current_content(self):
-        if self.files_content:
+        if self.text_area.winfo_exists() and self.files_content:
             filename, content = self.files_content[self.current_file_index]
             display_content(self.text_area, content, self.display_mode, self.config, self.current_line_index, self.font_primary, self.font_secondary)
 
     def switch_content(self):
-        switch_content(self)
+        if self.text_area.winfo_exists():
+            switch_content(self)
 
     def toggle_pause(self, event):
         if self.pause_on_click:
             self.is_paused = not self.is_paused
+            self.pause_label.config(text="Pause" if self.is_paused else "")
 
     def manual_switch(self, event):
         if event.x < self.text_area.winfo_width() // 2:
@@ -150,11 +158,13 @@ class MyriadTruthsApp(tk.Tk):
         self.bg_color = self.config.get('colors', 'background', fallback='white')
         self.fg_color = self.config.get('colors', 'foreground', fallback='black')
         self.opacity = self.config.getfloat('colors', 'opacity', fallback=1.0)
+        self.always_on_top = get_always_on_top(self.config)
 
         self.text_area.config(bg=self.bg_color, fg=self.fg_color)
         self.text_area.tag_configure('primary', font=self.parse_font(self.font_primary) or 'Arial 16')
         self.text_area.tag_configure('secondary', font=self.parse_font(self.font_secondary) or 'Arial 12')
         self.attributes('-alpha', self.opacity)
+        self.attributes("-topmost", self.always_on_top)  # 设置窗口置顶
         self.load_files()
         self.display_current_content()
 

@@ -12,6 +12,16 @@ def load_config():
     if 'window' not in config:
         config.add_section('window')
         config.set('window', 'geometry', '600x400+100+100')
+        config.set('window', 'always_on_top', 'False')
+
+    if 'display' not in config:
+        config.add_section('display')
+        config.set('display', 'font_primary', 'Arial 16')
+        config.set('display', 'font_secondary', 'Arial 12')
+
+    if 'behavior' not in config:
+        config.add_section('behavior')
+        config.set('behavior', 'auto_switch_interval', '5')
 
     return config
 
@@ -60,6 +70,11 @@ def get_auto_switch_interval(config):
     return interval
 
 
+def set_auto_switch_interval(config, interval):
+    config.set('behavior', 'auto_switch_interval', str(interval))
+    save_config(config)
+
+
 def get_pause_on_click(config):
     pause_on_click = config.getboolean('behavior', 'pause_on_click', fallback=True)
     return pause_on_click
@@ -71,4 +86,13 @@ def get_window_geometry(config):
 
 def set_window_geometry(config, geometry):
     config.set('window', 'geometry', geometry)
+    save_config(config)
+
+
+def get_always_on_top(config):
+    return config.getboolean('window', 'always_on_top', fallback=False)
+
+
+def set_always_on_top(config, always_on_top):
+    config.set('window', 'always_on_top', str(always_on_top))
     save_config(config)
