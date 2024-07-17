@@ -1,5 +1,5 @@
 # MyriadTruths
-
+![image](https://github.com/Cookiesukaze/MyriadTruths/blob/main/assets/sample_img.png?raw=true)
 **MyriadTruths 是一个 Windows 桌面便利贴应用程序** </br>
 因为自己迫切需要一个这样的小桌面应用，但是网上找不到现成的轻量又符合自己需求的便利贴软件，所以用 tkinter 做了一个。</br>
 **后续版本应该不会再加入太多功能**，而是专注于美化和修复 bug。</br>
@@ -9,8 +9,6 @@
 I urgently needed such a small desktop application, but couldn't find a suitable lightweight sticky notes software that met my needs online, so I made one using tkinter.</br>
 **Future versions are unlikely to add many new features**, but will focus on beautification and bug fixes.</br>
 The name is inspired by a skill name in _Persona_.</br>
-
-![image](https://github.com/Cookiesukaze/MyriadTruths/blob/main/assets/sample_img.png?raw=true)
 
 ### 支持设备 (Supported Devices)
 仅 Windows (Windows only)
