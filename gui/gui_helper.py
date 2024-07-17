@@ -27,27 +27,30 @@ def initialize_gui(app):
     app.overrideredirect(True)  # 去掉顶栏
     app.attributes("-topmost", app.always_on_top)  # 设置窗口置顶
 
-    # 添加可拖动的顶部条，调整高度为 15
-    app.top_bar = tk.Frame(app, bg='gray', height=10, cursor='fleur')
+    # 添加可拖动的顶部条，调整高度
+    app.top_bar = tk.Frame(app, bg='gray', height=18, cursor='fleur')
     app.top_bar.pack(fill=tk.X)
     add_drag_functionality(app, app.top_bar)
 
-    # 定义一个小字体
-    small_font = ('Arial', 8)
+    # 定义一个更小的字体
+    smaller_font = ('Arial', 8, 'bold')
 
     # 添加回滚和前进按钮
     app.prev_button = tk.Button(app.top_bar, text="<", command=app.previous_content,
-                                bg='gray', fg='white', relief=tk.FLAT,
-                                font=small_font, pady=0, padx=0)
-    app.prev_button.pack(side=tk.LEFT, padx=2, pady=0)
+                                bg='gray', fg='white', relief=tk.FLAT, borderwidth=0, highlightthickness=0,
+                                font=smaller_font, pady=0, padx=2, width=2, height=1)
+    app.prev_button.pack(side=tk.LEFT, padx=0, pady=0, ipady=0)
 
-    app.pause_label = tk.Label(app.top_bar, text="", bg='gray', fg='white')
-    app.pause_label.pack(side=tk.LEFT, padx=8)
+    app.pause_label = tk.Label(app.top_bar, text="", bg='gray', fg='white', font=smaller_font, height=1)
+    app.pause_label.pack(side=tk.LEFT, padx=1, pady=0, ipady=0)
 
     app.next_button = tk.Button(app.top_bar, text=">", command=app.next_content,
-                                bg='gray', fg='white', relief=tk.FLAT,
-                                font=small_font, pady=0, padx=0)
-    app.next_button.pack(side=tk.RIGHT, padx=2, pady=0)
+                                bg='gray', fg='white', relief=tk.FLAT, borderwidth=0, highlightthickness=0,
+                                font=smaller_font, pady=0, padx=2, width=2, height=1)
+    app.next_button.pack(side=tk.RIGHT, padx=0, pady=0, ipady=0)
+
+    # 防止容器自动调整大小以适应它的内容
+    app.top_bar.pack_propagate(False)
 
     # 添加文本区域
     app.text_area = tk.Text(app, wrap=tk.WORD, bg=app.bg_color, fg=app.fg_color)

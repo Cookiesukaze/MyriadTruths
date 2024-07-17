@@ -17,6 +17,7 @@ class MyriadTruthsApp(tk.Tk):
 
         self.config = load_config()
         initialize_gui(self)
+        self.switch_content_id = None  # 初始化 switch_content_id
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # 捕捉窗口关闭事件
 
@@ -24,7 +25,7 @@ class MyriadTruthsApp(tk.Tk):
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
 
-        # 绑定调整窗口大小的事件
+        # 绑定调整窗口大小的事件，只保留左下和右下两个小块
         self.bind("<Enter>", lambda event: add_resize_handles(self))
 
     def parse_font(self, font_str):
@@ -44,7 +45,7 @@ class MyriadTruthsApp(tk.Tk):
                 self.next_content()
             elif self.switch_mode == 'random':
                 self.random_content()
-            self.after(self.auto_switch_interval * 1000, self.switch_content)
+            self.switch_content_id = self.after(self.auto_switch_interval * 1000, self.switch_content)
 
     def random_content(self):
         random_content(self)
@@ -134,6 +135,12 @@ class MyriadTruthsApp(tk.Tk):
 
         self.display_current_content()
 
+        # 重新设置切换内容的定时器
+        if not self.is_paused:
+            if self.switch_content_id is not None:
+                self.after_cancel(self.switch_content_id)
+            self.switch_content_id = self.after(self.auto_switch_interval * 1000, self.switch_content)
+
     def on_closing(self):
         # 保存当前文件索引和行索引
         set_current_file_index(self.config, self.current_file_index)
@@ -152,4 +159,5 @@ class MyriadTruthsApp(tk.Tk):
 
 if __name__ == "__main__":
     app = MyriadTruthsApp()
+    app.switch_content_id = app.after(app.auto_switch_interval * 1000, app.switch_content)
     app.mainloop()

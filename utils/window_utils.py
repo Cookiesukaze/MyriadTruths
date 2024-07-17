@@ -14,23 +14,23 @@ def add_drag_functionality(root, widget):
     widget.bind('<B1-Motion>', do_move)
 
 def add_resize_handles(root):
-    # 左上角
-    nw_resize = tk.Frame(root, cursor='size_nw_se', bg='gray', width=10, height=10)
-    nw_resize.place(x=0, y=0)
-    nw_resize.bind("<B1-Motion>", lambda event: resize_nw(event, root))
-
-    # 右上角
-    ne_resize = tk.Frame(root, cursor='size_ne_sw', bg='gray', width=10, height=10)
-    ne_resize.place(relx=1.0, y=0, anchor=tk.NE)
-    ne_resize.bind("<B1-Motion>", lambda event: resize_ne(event, root))
+    # # 左上角
+    # nw_resize = tk.Frame(root, cursor='size_nw_se', bg='gray', width=10, height=10)
+    # nw_resize.place(x=0, y=0)
+    # nw_resize.bind("<B1-Motion>", lambda event: resize_nw(event, root))
+    #
+    # # 右上角
+    # ne_resize = tk.Frame(root, cursor='size_ne_sw', bg='gray', width=10, height=10)
+    # ne_resize.place(relx=1.0, y=0, anchor=tk.NE)
+    # ne_resize.bind("<B1-Motion>", lambda event: resize_ne(event, root))
 
     # 左下角
-    sw_resize = tk.Frame(root, cursor='size_ne_sw', bg='gray', width=10, height=10)
+    sw_resize = tk.Frame(root, cursor='size_ne_sw', bg='gray', width=7, height=7)
     sw_resize.place(x=0, rely=1.0, anchor=tk.SW)
     sw_resize.bind("<B1-Motion>", lambda event: resize_sw(event, root))
 
     # 右下角
-    se_resize = tk.Frame(root, cursor='size_nw_se', bg='gray', width=10, height=10)
+    se_resize = tk.Frame(root, cursor='size_nw_se', bg='gray', width=7, height=7)
     se_resize.place(relx=1.0, rely=1.0, anchor=tk.SE)
     se_resize.bind("<B1-Motion>", lambda event: resize_se(event, root))
 
