@@ -12,7 +12,7 @@ I urgently needed such a small desktop application, but couldn't find a suitable
 **Future versions are unlikely to add many new features**, but will focus on beautification and bug fixes.</br>
 The name is inspired by a skill name in _Persona_.</br>
 
-### 支持设备 (Supported Devices)
+### 支持系统 (Supported OS)
 仅 Windows (Windows only)
 
 ### 如何使用 (How to Use)
