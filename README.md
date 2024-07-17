@@ -10,6 +10,8 @@ I urgently needed such a small desktop application, but couldn't find a suitable
 **Future versions are unlikely to add many new features**, but will focus on beautification and bug fixes.</br>
 The name is inspired by a skill name in _Persona_.</br>
 
+![image](https://github.com/Cookiesukaze/MyriadTruths/blob/main/assets/sample_img.png?raw=true)
+
 ### 支持设备 (Supported Devices)
 仅 Windows (Windows only)
 
