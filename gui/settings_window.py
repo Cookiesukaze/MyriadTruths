@@ -43,11 +43,13 @@ class SettingsWindow(tk.Toplevel):
         self.font_secondary_size_entry.grid(row=4, column=1, columnspan=2, sticky=tk.EW)
 
         tk.Label(self, text="背景颜色:").grid(row=5, column=0, sticky=tk.W)
-        self.bg_color_button = tk.Button(self, text="选择颜色", command=self.choose_bg_color)
+        self.bg_color = self.config.get('colors', 'background', fallback='white')
+        self.bg_color_button = tk.Button(self, text="选择颜色", bg=self.bg_color, command=self.choose_bg_color)
         self.bg_color_button.grid(row=5, column=1, columnspan=2, sticky=tk.EW)
 
         tk.Label(self, text="文字颜色:").grid(row=6, column=0, sticky=tk.W)
-        self.fg_color_button = tk.Button(self, text="选择颜色", command=self.choose_fg_color)
+        self.fg_color = self.config.get('colors', 'foreground', fallback='black')
+        self.fg_color_button = tk.Button(self, text="选择颜色", fg=self.fg_color, command=self.choose_fg_color)
         self.fg_color_button.grid(row=6, column=1, columnspan=2, sticky=tk.EW)
 
         tk.Label(self, text="透明度:").grid(row=7, column=0, sticky=tk.W)
