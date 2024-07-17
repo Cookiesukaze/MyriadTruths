@@ -1,5 +1,6 @@
 import tkinter as tk
 import signal
+from tkinter import messagebox
 from config.config import (
     load_config, save_config, set_window_geometry, set_current_file_index, set_current_line_index,
     get_folder_path, get_display_fonts, get_display_mode,
@@ -27,6 +28,9 @@ class MyriadTruthsApp(tk.Tk):
 
         # 绑定调整窗口大小的事件，只保留左下和右下两个小块
         self.bind("<Enter>", lambda event: add_resize_handles(self))
+
+        # 创建右键菜单
+        self.create_context_menu()
 
     def parse_font(self, font_str):
         return parse_font(font_str)
@@ -106,6 +110,18 @@ class MyriadTruthsApp(tk.Tk):
 
     def open_settings(self):
         SettingsWindow(self)
+
+    def show_about(self):
+        messagebox.showinfo("About Myriad Truths", "Author: Cookiesukaze\nRepository: github.com/Cookiesukaze/MyriadTruths\nVersion: 0.1.0\nThank you for using!\nFeel free to ask questions in issues or email me (Cookiesukaze@qq.com).")
+
+    def create_context_menu(self):
+        self.context_menu = tk.Menu(self, tearoff=0)
+        self.context_menu.add_command(label="设置", command=self.open_settings)
+        self.context_menu.add_command(label="关于", command=self.show_about)
+        self.context_menu.add_separator()
+        self.context_menu.add_command(label="退出", command=self.on_closing)
+
+        self.bind("<Button-3>", self.show_context_menu)  # 右键点击显示菜单
 
     def apply_settings(self, config):
         previous_switch_mode = self.switch_mode
