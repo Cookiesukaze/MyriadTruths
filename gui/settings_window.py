@@ -4,7 +4,7 @@ import os
 from config.config import (
     get_folder_path, get_display_fonts, get_display_mode, set_folder_path,
     set_display_fonts, save_config, set_display_mode, get_auto_switch_interval, set_auto_switch_interval,
-    get_always_on_top, set_always_on_top
+    get_always_on_top, set_always_on_top, get_switch_mode, set_switch_mode
 )
 
 COMMON_FONTS = ["Arial", "微软雅黑", "Times New Roman", "等线", "Lucida Console"]
@@ -13,7 +13,7 @@ class SettingsWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("设置")
-        self.geometry("400x600")
+        self.geometry("400x650")
         self.parent = parent
         self.config = parent.config
 
@@ -69,7 +69,13 @@ class SettingsWindow(tk.Toplevel):
         self.auto_switch_interval_entry = tk.Entry(self, textvariable=self.auto_switch_interval)
         self.auto_switch_interval_entry.grid(row=10, column=1, columnspan=2, sticky=tk.EW)
 
-        tk.Button(self, text="保存", command=self.save_settings).grid(row=11, column=0, columnspan=3, sticky=tk.EW)
+        tk.Label(self, text="切换模式:").grid(row=11, column=0, sticky=tk.W)
+        self.switch_mode_var = tk.StringVar(value=get_switch_mode(self.config))
+        self.switch_mode_options = {"顺序模式": "sequential", "顺序模式（从上一次关闭时进度开始）": "sequential_resume", "随机模式": "random"}
+        self.switch_mode_menu = tk.OptionMenu(self, self.switch_mode_var, *self.switch_mode_options.keys())
+        self.switch_mode_menu.grid(row=11, column=1, columnspan=2, sticky=tk.EW)
+
+        tk.Button(self, text="保存", command=self.save_settings).grid(row=12, column=0, columnspan=3, sticky=tk.EW)
 
         self.grid_columnconfigure(1, weight=1)
 
@@ -106,6 +112,7 @@ class SettingsWindow(tk.Toplevel):
         set_display_mode(self.config, self.mode_options.get(self.mode_var.get(), 'single_line'))
         set_always_on_top(self.config, self.always_on_top.get())
         set_auto_switch_interval(self.config, int(self.auto_switch_interval.get()))
+        set_switch_mode(self.config, self.switch_mode_options.get(self.switch_mode_var.get(), 'sequential'))
         save_config(self.config)
         self.parent.apply_settings(self.config)
         self.destroy()

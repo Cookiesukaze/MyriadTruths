@@ -1,82 +1,22 @@
 import tkinter as tk
 import signal
 from config.config import (
-    load_config, get_folder_path, get_display_fonts, get_display_mode,
-    get_auto_switch_interval, get_pause_on_click, set_folder_path,
-    set_display_fonts, save_config, set_display_mode, set_window_geometry, get_window_geometry, get_always_on_top
+    load_config, save_config, set_window_geometry, set_current_file_index, set_current_line_index,
+    get_folder_path, get_display_fonts, get_display_mode,
+    get_auto_switch_interval, get_pause_on_click, get_always_on_top,
+    get_switch_mode
 )
 from gui.settings_window import SettingsWindow
-from utils.window_utils import add_drag_functionality, add_resize_handles
-from utils.file_loader import load_files
-from utils.content_display import display_content, switch_content
+from gui.gui_helper import initialize_gui, parse_font, load_app_files, display_current_content, random_content
+from utils.window_utils import add_resize_handles
+
 
 class MyriadTruthsApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
         self.config = load_config()
-
-        self.folder_path = get_folder_path(self.config)
-        self.font_primary, self.font_secondary = get_display_fonts(self.config)
-        self.display_mode = get_display_mode(self.config)
-        self.auto_switch_interval = get_auto_switch_interval(self.config)
-        self.pause_on_click = get_pause_on_click(self.config)
-        self.bg_color = self.config.get('colors', 'background', fallback='white')
-        self.fg_color = self.config.get('colors', 'foreground', fallback='black')
-        self.opacity = self.config.getfloat('colors', 'opacity', fallback=1.0)
-        self.always_on_top = get_always_on_top(self.config)
-
-        # 设置窗口几何位置和大小
-        geometry = get_window_geometry(self.config)
-        self.geometry(geometry)
-        self.overrideredirect(True)  # 去掉顶栏
-        self.attributes("-topmost", self.always_on_top)  # 设置窗口置顶
-
-        # 添加可拖动的顶部条，调整高度为 15
-        self.top_bar = tk.Frame(self, bg='gray', height=10, cursor='fleur')
-        self.top_bar.pack(fill=tk.X)
-        add_drag_functionality(self, self.top_bar)
-
-        # 定义一个小字体
-        small_font = ('Arial', 8)
-
-        # 添加回滚和前进按钮
-        self.prev_button = tk.Button(self.top_bar, text="<", command=self.previous_content,
-                                     bg='gray', fg='white', relief=tk.FLAT,
-                                     font=small_font, pady=0, padx=0)
-        self.prev_button.pack(side=tk.LEFT, padx=2, pady=0)
-
-        self.pause_label = tk.Label(self.top_bar, text="", bg='gray', fg='white')
-        self.pause_label.pack(side=tk.LEFT, padx=8)
-
-        self.next_button = tk.Button(self.top_bar, text=">", command=self.next_content,
-                                     bg='gray', fg='white', relief=tk.FLAT,
-                                     font=small_font, pady=0, padx=0)
-        self.next_button.pack(side=tk.RIGHT, padx=2, pady=0)
-
-        # 添加文本区域
-        self.text_area = tk.Text(self, wrap=tk.WORD, bg=self.bg_color, fg=self.fg_color)
-        self.text_area.pack(fill=tk.BOTH, expand=True)
-        self.text_area.bind("<Button-1>", self.toggle_pause)
-        self.text_area.bind("<Button-3>", self.show_context_menu)
-
-        self.text_area.tag_configure('primary', font=self.parse_font(self.font_primary) or 'Arial 16')
-        self.text_area.tag_configure('secondary', font=self.parse_font(self.font_secondary) or 'Arial 12')
-
-        self.context_menu = tk.Menu(self, tearoff=0)
-        self.context_menu.add_command(label="设置", command=self.open_settings)
-        self.context_menu.add_separator()
-        self.context_menu.add_command(label="退出", command=self.on_closing)
-
-        self.files_content = []
-        self.current_file_index = 0
-        self.current_line_index = 0
-        self.is_paused = False
-
-        self.attributes('-alpha', self.opacity)
-        self.load_files()
-        self.display_current_content()
-        self.after(self.auto_switch_interval * 1000, self.switch_content)
+        initialize_gui(self)
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # 捕捉窗口关闭事件
 
@@ -88,28 +28,33 @@ class MyriadTruthsApp(tk.Tk):
         self.bind("<Enter>", lambda event: add_resize_handles(self))
 
     def parse_font(self, font_str):
-        parts = font_str.rsplit(' ', 1)
-        if len(parts) == 2:
-            font_name, font_size = parts
-            return (font_name, int(font_size))
-        return font_str
+        return parse_font(font_str)
 
     def load_files(self):
-        self.files_content = load_files(self.folder_path)
+        load_app_files(self)
 
     def display_current_content(self):
-        if self.text_area.winfo_exists() and self.files_content:
-            filename, content = self.files_content[self.current_file_index]
-            display_content(self.text_area, content, self.display_mode, self.config, self.current_line_index, self.font_primary, self.font_secondary)
+        display_current_content(self)
 
     def switch_content(self):
-        if self.text_area.winfo_exists():
-            switch_content(self)
+        if not self.is_paused:
+            if self.switch_mode == 'sequential':
+                self.next_content()
+            elif self.switch_mode == 'sequential_resume':
+                self.next_content()
+            elif self.switch_mode == 'random':
+                self.random_content()
+            self.after(self.auto_switch_interval * 1000, self.switch_content)
+
+    def random_content(self):
+        random_content(self)
 
     def toggle_pause(self, event):
         if self.pause_on_click:
             self.is_paused = not self.is_paused
             self.pause_label.config(text="Pause" if self.is_paused else "")
+            if not self.is_paused:
+                self.switch_content()
 
     def manual_switch(self, event):
         if event.x < self.text_area.winfo_width() // 2:
@@ -162,6 +107,7 @@ class MyriadTruthsApp(tk.Tk):
         SettingsWindow(self)
 
     def apply_settings(self, config):
+        previous_switch_mode = self.switch_mode
         self.config = config
         self.folder_path = get_folder_path(self.config)
         self.font_primary, self.font_secondary = get_display_fonts(self.config)
@@ -172,6 +118,7 @@ class MyriadTruthsApp(tk.Tk):
         self.fg_color = self.config.get('colors', 'foreground', fallback='black')
         self.opacity = self.config.getfloat('colors', 'opacity', fallback=1.0)
         self.always_on_top = get_always_on_top(self.config)
+        self.switch_mode = get_switch_mode(self.config)
 
         self.text_area.config(bg=self.bg_color, fg=self.fg_color)
         self.text_area.tag_configure('primary', font=self.parse_font(self.font_primary) or 'Arial 16')
@@ -179,17 +126,29 @@ class MyriadTruthsApp(tk.Tk):
         self.attributes('-alpha', self.opacity)
         self.attributes("-topmost", self.always_on_top)  # 设置窗口置顶
         self.load_files()
+
+        # 如果切换到顺序模式，从头开始
+        if self.switch_mode == 'sequential' and previous_switch_mode != 'sequential':
+            self.current_file_index = 0
+            self.current_line_index = 0
+
         self.display_current_content()
 
     def on_closing(self):
+        # 保存当前文件索引和行索引
+        set_current_file_index(self.config, self.current_file_index)
+        set_current_line_index(self.config, self.current_line_index)
+
         # 保存窗口几何位置和大小
         geometry = self.winfo_geometry()
         print(f"保存窗口几何位置和大小: {geometry}")  # 在控制台打印几何信息
         set_window_geometry(self.config, geometry)
+        save_config(self.config)
         self.destroy()
 
     def signal_handler(self, signal_received, frame):
         self.on_closing()
+
 
 if __name__ == "__main__":
     app = MyriadTruthsApp()

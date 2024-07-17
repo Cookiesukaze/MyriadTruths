@@ -22,10 +22,20 @@ def load_config():
     if 'behavior' not in config:
         config.add_section('behavior')
         config.set('behavior', 'auto_switch_interval', '5')
+        config.set('behavior', 'switch_mode', 'sequential')
+    else:
+        # 如果 'behavior' 部分存在，但缺少 'switch_mode' 设置
+        if 'switch_mode' not in config['behavior']:
+            config.set('behavior', 'switch_mode', 'sequential')
 
     if 'files' not in config:
         config.add_section('files')
         config.set('files', 'folder_path', os.path.abspath('.'))
+
+    if 'progress' not in config:
+        config.add_section('progress')
+        config.set('progress', 'current_file_index', '0')
+        config.set('progress', 'current_line_index', '0')
 
     return config
 
@@ -99,4 +109,31 @@ def get_always_on_top(config):
 
 def set_always_on_top(config, always_on_top):
     config.set('window', 'always_on_top', str(always_on_top))
+    save_config(config)
+
+
+def get_switch_mode(config):
+    return config.get('behavior', 'switch_mode', fallback='sequential')
+
+
+def set_switch_mode(config, switch_mode):
+    config.set('behavior', 'switch_mode', switch_mode)
+    save_config(config)
+
+
+def get_current_file_index(config):
+    return config.getint('progress', 'current_file_index', fallback=0)
+
+
+def set_current_file_index(config, index):
+    config.set('progress', 'current_file_index', str(index))
+    save_config(config)
+
+
+def get_current_line_index(config):
+    return config.getint('progress', 'current_line_index', fallback=0)
+
+
+def set_current_line_index(config, index):
+    config.set('progress', 'current_line_index', str(index))
     save_config(config)
