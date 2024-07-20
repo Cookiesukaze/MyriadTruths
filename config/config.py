@@ -30,7 +30,7 @@ def load_config():
 
     if 'files' not in config:
         config.add_section('files')
-        config.set('files', 'folder_path', os.path.abspath('.'))
+        config.set('files', 'folder_path', os.path.relpath('.'))
 
     if 'progress' not in config:
         config.add_section('progress')
@@ -47,13 +47,15 @@ def save_config(config):
 
 def get_folder_path(config):
     folder_path = config.get('files', 'folder_path', fallback=None)
-    if folder_path is not None:
-        folder_path = os.path.abspath(folder_path.encode('utf-8').decode('utf-8'))
+    if folder_path is not None and not os.path.isabs(folder_path):
+        folder_path = os.path.abspath(folder_path)
     return folder_path
 
 
 def set_folder_path(config, folder_path):
-    config.set('files', 'folder_path', os.path.abspath(folder_path))
+    if os.path.isabs(folder_path):
+        folder_path = os.path.relpath(folder_path)
+    config.set('files', 'folder_path', folder_path)
     save_config(config)
 
 

@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import font, colorchooser, filedialog
+from tkinter import colorchooser, filedialog
 import os
 from config.config import (
     get_folder_path, get_display_fonts, get_display_mode, set_folder_path,
@@ -20,7 +20,8 @@ class SettingsWindow(tk.Toplevel):
         tk.Label(self, text="文件夹路径:").grid(row=0, column=0, sticky=tk.W)
         self.folder_path_entry = tk.Entry(self)
         self.folder_path_entry.grid(row=0, column=1, columnspan=2, sticky=tk.EW)
-        self.folder_path_entry.insert(0, get_folder_path(self.config))
+        relative_folder_path = os.path.relpath(get_folder_path(self.config))
+        self.folder_path_entry.insert(0, relative_folder_path)
 
         tk.Label(self, text="主字体:").grid(row=1, column=0, sticky=tk.W)
         self.font_primary_family = tk.StringVar(value=self.parse_font_family(get_display_fonts(self.config)[0]))
@@ -103,8 +104,10 @@ class SettingsWindow(tk.Toplevel):
         secondary_font = self.font_secondary_family.get()
         secondary_font_size = int(self.font_secondary_size.get())
 
-        # 获取文件夹路径并转换为绝对路径
-        folder_path = os.path.abspath(self.folder_path_entry.get())
+        # 获取文件夹路径并转换为相对路径
+        folder_path = self.folder_path_entry.get()
+        if os.path.isabs(folder_path):
+            folder_path = os.path.relpath(folder_path)
 
         set_folder_path(self.config, folder_path)
         set_display_fonts(self.config, f"{primary_font} {primary_font_size}", f"{secondary_font} {secondary_font_size}")
