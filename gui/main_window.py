@@ -119,7 +119,7 @@ class MyriadTruthsApp(tk.Tk):
             self.settings_window = SettingsWindow(self)
 
     def show_about(self):
-        messagebox.showinfo("About Myriad Truths", "Author: Cookiesukaze\nRepository: github.com/Cookiesukaze/MyriadTruths\nVersion: 0.1.0\nThank you for using!\nFeel free to ask questions in issues or email me (Cookiesukaze@qq.com).")
+        messagebox.showinfo("About Myriad Truths", "Author: Cookiesukaze\nRepository: github.com/Cookiesukaze/MyriadTruths\nVersion: 0.1.0-beta2\nThank you for using!\nFeel free to ask questions in issues or email me (Cookiesukaze@qq.com).")
 
     def create_context_menu(self):
         self.context_menu = tk.Menu(self, tearoff=0)
