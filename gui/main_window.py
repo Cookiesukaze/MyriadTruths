@@ -19,6 +19,7 @@ class MyriadTruthsApp(tk.Tk):
         self.config = load_config()
         initialize_gui(self)
         self.switch_content_id = None  # 初始化 switch_content_id
+        self.settings_window = None  # 用于跟踪设置窗口
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # 捕捉窗口关闭事件
 
@@ -112,7 +113,10 @@ class MyriadTruthsApp(tk.Tk):
         self.context_menu.post(event.x_root, event.y_root)
 
     def open_settings(self):
-        SettingsWindow(self)
+        if self.settings_window is not None and self.settings_window.winfo_exists():
+            self.settings_window.lift()
+        else:
+            self.settings_window = SettingsWindow(self)
 
     def show_about(self):
         messagebox.showinfo("About Myriad Truths", "Author: Cookiesukaze\nRepository: github.com/Cookiesukaze/MyriadTruths\nVersion: 0.1.0\nThank you for using!\nFeel free to ask questions in issues or email me (Cookiesukaze@qq.com).")
