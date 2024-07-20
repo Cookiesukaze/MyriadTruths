@@ -140,8 +140,13 @@ class SettingsWindow(tk.Toplevel):
         current_display_mode = self.mode_var.get()
         current_switch_mode = self.switch_mode_var.get()
 
-        set_display_mode(self.config, self.mode_options.get(current_display_mode, 'single_line'))
-        set_switch_mode(self.config, self.switch_mode_options.get(current_switch_mode, 'sequential'))
+        # 如果用户未更改显示模式和切换模式，则使用现有配置的值
+        if not current_display_mode:
+            current_display_mode = get_display_mode(self.config)
+        if not current_switch_mode:
+            current_switch_mode = get_switch_mode(self.config)
+        set_display_mode(self.config, self.mode_options.get(current_display_mode, get_display_mode(self.config)))
+        set_switch_mode(self.config, self.switch_mode_options.get(current_switch_mode, get_switch_mode(self.config)))
 
         set_always_on_top(self.config, self.always_on_top.get())
         set_auto_switch_interval(self.config, int(self.auto_switch_interval.get()))
