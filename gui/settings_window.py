@@ -4,7 +4,8 @@ import os
 from config.config import (
     get_folder_path, get_display_fonts, get_display_mode, set_folder_path,
     set_display_fonts, save_config, set_display_mode, get_auto_switch_interval, set_auto_switch_interval,
-    get_always_on_top, set_always_on_top, get_switch_mode, set_switch_mode
+    get_always_on_top, set_always_on_top, get_switch_mode, set_switch_mode,
+    set_current_file_index, set_current_line_index
 )
 
 COMMON_FONTS = ["Arial", "微软雅黑", "Times New Roman", "等线", "Lucida Console"]
@@ -110,7 +111,10 @@ class SettingsWindow(tk.Toplevel):
         secondary_font = self.font_secondary_family.get()
         secondary_font_size = int(self.font_secondary_size.get())
 
-        # 获取文件夹路径并转换为相对路径（如果是 'assets' 则保存为相对路径）
+        # 获取当前文件夹路径
+        old_folder_path = get_folder_path(self.config)
+
+        # 获取新文件夹路径并转换为相对路径（如果是 'assets' 则保存为相对路径）
         folder_path = self.folder_path_entry.get()
         if folder_path == 'assets':
             folder_path = 'assets'
@@ -119,7 +123,14 @@ class SettingsWindow(tk.Toplevel):
         else:
             folder_path = os.path.relpath(folder_path)
 
+        # 保存文件夹路径
         set_folder_path(self.config, folder_path)
+
+        # 如果文件夹路径发生变化，重置文件索引和行索引
+        if folder_path != old_folder_path:
+            set_current_file_index(self.config, 0)
+            set_current_line_index(self.config, 0)
+
         set_display_fonts(self.config, f"{primary_font} {primary_font_size}", f"{secondary_font} {secondary_font_size}")
         self.config.set('colors', 'background', self.bg_color_button.cget('bg'))
         self.config.set('colors', 'foreground', self.fg_color_button.cget('fg'))

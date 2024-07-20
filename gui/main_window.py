@@ -5,7 +5,7 @@ from config.config import (
     load_config, save_config, set_window_geometry, set_current_file_index, set_current_line_index,
     get_folder_path, get_display_fonts, get_display_mode,
     get_auto_switch_interval, get_pause_on_click, get_always_on_top,
-    get_switch_mode
+    get_switch_mode, get_current_file_index, get_current_line_index
 )
 from gui.settings_window import SettingsWindow
 from gui.gui_helper import initialize_gui, parse_font, load_app_files, display_current_content, random_content
@@ -119,7 +119,7 @@ class MyriadTruthsApp(tk.Tk):
             self.settings_window = SettingsWindow(self)
 
     def show_about(self):
-        messagebox.showinfo("About Myriad Truths", "Author: Cookiesukaze\nRepository: github.com/Cookiesukaze/MyriadTruths\nVersion: 0.1.0-beta2\nThank you for using!\nFeel free to ask questions in issues or email me (Cookiesukaze@qq.com).")
+        messagebox.showinfo("About Myriad Truths", "Author: Cookiesukaze\nRepository: github.com/Cookiesukaze/MyriadTruths\nVersion: 0.1.0\nThank you for using!\nFeel free to ask questions in issues or email me (Cookiesukaze@qq.com).")
 
     def create_context_menu(self):
         self.context_menu = tk.Menu(self, tearoff=0)
@@ -150,6 +150,10 @@ class MyriadTruthsApp(tk.Tk):
         self.attributes('-alpha', self.opacity)
         self.attributes("-topmost", self.always_on_top)  # 设置窗口置顶
         self.load_files()
+
+        # 重新设置文件和行索引
+        self.current_file_index = get_current_file_index(self.config)
+        self.current_line_index = get_current_line_index(self.config)
 
         # 如果切换到顺序模式，从头开始
         if self.switch_mode == 'sequential' and previous_switch_mode != 'sequential':
