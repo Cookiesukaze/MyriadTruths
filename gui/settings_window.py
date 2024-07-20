@@ -17,11 +17,17 @@ class SettingsWindow(tk.Toplevel):
         self.parent = parent
         self.config = parent.config
 
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # 捕捉窗口关闭事件
+
         tk.Label(self, text="文件夹路径:").grid(row=0, column=0, sticky=tk.W)
         self.folder_path_entry = tk.Entry(self)
         self.folder_path_entry.grid(row=0, column=1, columnspan=2, sticky=tk.EW)
-        relative_folder_path = os.path.relpath(get_folder_path(self.config))
-        self.folder_path_entry.insert(0, relative_folder_path)
+        folder_path = get_folder_path(self.config)
+        if folder_path:
+            if folder_path.endswith('assets'):
+                self.folder_path_entry.insert(0, 'assets')
+            else:
+                self.folder_path_entry.insert(0, folder_path)
 
         tk.Label(self, text="主字体:").grid(row=1, column=0, sticky=tk.W)
         self.font_primary_family = tk.StringVar(value=self.parse_font_family(get_display_fonts(self.config)[0]))
@@ -104,9 +110,13 @@ class SettingsWindow(tk.Toplevel):
         secondary_font = self.font_secondary_family.get()
         secondary_font_size = int(self.font_secondary_size.get())
 
-        # 获取文件夹路径并转换为相对路径
+        # 获取文件夹路径并转换为相对路径（如果是 'assets' 则保存为相对路径）
         folder_path = self.folder_path_entry.get()
-        if os.path.isabs(folder_path):
+        if folder_path == 'assets':
+            folder_path = 'assets'
+        elif os.path.isabs(folder_path):
+            folder_path = folder_path
+        else:
             folder_path = os.path.relpath(folder_path)
 
         set_folder_path(self.config, folder_path)
@@ -119,17 +129,15 @@ class SettingsWindow(tk.Toplevel):
         current_display_mode = self.mode_var.get()
         current_switch_mode = self.switch_mode_var.get()
 
-        # 如果用户未更改显示模式和切换模式，则使用现有配置的值
-        if not current_display_mode:
-            current_display_mode = get_display_mode(self.config)
-        if not current_switch_mode:
-            current_switch_mode = get_switch_mode(self.config)
-
-        set_display_mode(self.config, self.mode_options.get(current_display_mode, get_display_mode(self.config)))
-        set_switch_mode(self.config, self.switch_mode_options.get(current_switch_mode, get_switch_mode(self.config)))
+        set_display_mode(self.config, self.mode_options.get(current_display_mode, 'single_line'))
+        set_switch_mode(self.config, self.switch_mode_options.get(current_switch_mode, 'sequential'))
 
         set_always_on_top(self.config, self.always_on_top.get())
         set_auto_switch_interval(self.config, int(self.auto_switch_interval.get()))
         save_config(self.config)
         self.parent.apply_settings(self.config)
+        self.destroy()
+
+    def on_closing(self):
+        self.parent.settings_window = None
         self.destroy()

@@ -1,5 +1,5 @@
-# gui/gui_helper.py
 import random
+import os
 import tkinter as tk
 from utils.content_display import display_content
 from config.config import (
@@ -10,8 +10,13 @@ from config.config import (
 from utils.file_loader import load_files
 from utils.window_utils import add_drag_functionality, add_resize_handles
 
+
 def initialize_gui(app):
     app.folder_path = get_folder_path(app.config)
+    if not app.folder_path or not os.path.exists(app.folder_path):
+        print(f"错误：文件夹路径 {app.folder_path} 不存在。")
+        return
+
     app.font_primary, app.font_secondary = get_display_fonts(app.config)
     app.display_mode = get_display_mode(app.config)
     app.auto_switch_interval = get_auto_switch_interval(app.config)
@@ -73,8 +78,14 @@ def initialize_gui(app):
 
     app.attributes('-alpha', app.opacity)
     load_app_files(app)
+
+    if not app.files_content:
+        print(f"错误：文件夹 {app.folder_path} 中没有找到任何文件。")
+        return
+
     app.display_current_content()
     app.after(app.auto_switch_interval * 1000, app.switch_content)
+
 
 def parse_font(font_str):
     parts = font_str.rsplit(' ', 1)
@@ -83,16 +94,22 @@ def parse_font(font_str):
         return (font_name, int(font_size))
     return font_str
 
+
 def load_app_files(app):
     app.files_content = load_files(app.folder_path)
+    if not app.files_content:
+        print(f"错误：文件夹 {app.folder_path} 中没有找到任何文件。")
+
 
 def display_current_content(app):
     if app.text_area.winfo_exists() and app.files_content:
         filename, content = app.files_content[app.current_file_index]
-        display_content(app.text_area, content, app.display_mode, app.config, app.current_line_index, app.font_primary, app.font_secondary)
+        display_content(app.text_area, content, app.display_mode, app.config, app.current_line_index, app.font_primary,
+                        app.font_secondary)
+
 
 def switch_content(app):
-    if app.text_area.winfo_exists():
+    if app.text_area.winfo_exists() and app.files_content:
         if app.switch_mode == 'sequential':
             app.next_content()
         elif app.switch_mode == 'sequential_resume':
@@ -101,7 +118,9 @@ def switch_content(app):
             app.random_content()
         app.after(app.auto_switch_interval * 1000, app.switch_content)
 
+
 def random_content(app):
-    app.current_file_index = random.randint(0, len(app.files_content) - 1)
-    app.current_line_index = random.randint(0, len(app.files_content[app.current_file_index][1]) - 1)
-    app.display_current_content()
+    if app.files_content:
+        app.current_file_index = random.randint(0, len(app.files_content) - 1)
+        app.current_line_index = random.randint(0, len(app.files_content[app.current_file_index][1]) - 1)
+        app.display_current_content()
