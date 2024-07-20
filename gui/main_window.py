@@ -58,8 +58,11 @@ class MyriadTruthsApp(tk.Tk):
         if self.pause_on_click:
             self.is_paused = not self.is_paused
             self.pause_label.config(text="Pause" if self.is_paused else "")
-            if not self.is_paused:
-                self.switch_content()
+            if self.is_paused:
+                if self.switch_content_id is not None:
+                    self.after_cancel(self.switch_content_id)
+            else:
+                self.switch_content_id = self.after(self.auto_switch_interval * 1000, self.switch_content)
 
     def manual_switch(self, event):
         if event.x < self.text_area.winfo_width() // 2:
