@@ -114,10 +114,22 @@ class SettingsWindow(tk.Toplevel):
         self.config.set('colors', 'background', self.bg_color_button.cget('bg'))
         self.config.set('colors', 'foreground', self.fg_color_button.cget('fg'))
         self.config.set('colors', 'opacity', str(self.opacity_scale.get()))
-        set_display_mode(self.config, self.mode_options.get(self.mode_var.get(), 'single_line'))
+
+        # 确保正确获取当前选择的显示模式和切换模式
+        current_display_mode = self.mode_var.get()
+        current_switch_mode = self.switch_mode_var.get()
+
+        # 如果用户未更改显示模式和切换模式，则使用现有配置的值
+        if not current_display_mode:
+            current_display_mode = get_display_mode(self.config)
+        if not current_switch_mode:
+            current_switch_mode = get_switch_mode(self.config)
+
+        set_display_mode(self.config, self.mode_options.get(current_display_mode, get_display_mode(self.config)))
+        set_switch_mode(self.config, self.switch_mode_options.get(current_switch_mode, get_switch_mode(self.config)))
+
         set_always_on_top(self.config, self.always_on_top.get())
         set_auto_switch_interval(self.config, int(self.auto_switch_interval.get()))
-        set_switch_mode(self.config, self.switch_mode_options.get(self.switch_mode_var.get(), 'sequential'))
         save_config(self.config)
         self.parent.apply_settings(self.config)
         self.destroy()
