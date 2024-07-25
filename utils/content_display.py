@@ -18,6 +18,8 @@ def display_content(text_area, content, mode, config, current_line_index, font_p
                 if len(parts) >= 2:
                     text_area.insert(tk.END, parts[0] + '\n', 'primary')
                     text_area.insert(tk.END, parts[1] + '\n', 'secondary')
+                else:
+                    text_area.insert(tk.END, content[current_line_index] + '\n', 'primary')
 
 def switch_content(app):
     if app.text_area.winfo_exists():
