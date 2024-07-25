@@ -22,7 +22,11 @@ class SettingsWindow(tk.Toplevel):
 
         tk.Label(self, text="文件夹路径:").grid(row=0, column=0, sticky=tk.W)
         self.folder_path_entry = tk.Entry(self)
-        self.folder_path_entry.grid(row=0, column=1, columnspan=2, sticky=tk.EW)
+        self.folder_path_entry.grid(row=0, column=1, sticky=tk.EW)
+        self.browse_button = tk.Button(self, text="浏览", command=self.browse_folder)
+        self.browse_button.grid(row=0, column=2, sticky=tk.EW)
+        self.reset_button = tk.Button(self, text="还原", command=self.reset_folder_path)
+        self.reset_button.grid(row=0, column=3, sticky=tk.EW)
         folder_path = get_folder_path(self.config)
         if folder_path:
             if folder_path.endswith('assets'):
@@ -33,7 +37,7 @@ class SettingsWindow(tk.Toplevel):
         tk.Label(self, text="主字体:").grid(row=1, column=0, sticky=tk.W)
         self.font_primary_family = tk.StringVar(value=self.parse_font_family(get_display_fonts(self.config)[0]))
         self.font_primary_family_menu = tk.OptionMenu(self, self.font_primary_family, *COMMON_FONTS)
-        self.font_primary_family_menu.grid(row=1, column=1, sticky=tk.EW)
+        self.font_primary_family_menu.grid(row=1, column=1, columnspan=2, sticky=tk.EW)
 
         tk.Label(self, text="主字体大小:").grid(row=2, column=0, sticky=tk.W)
         self.font_primary_size = tk.StringVar(value=self.parse_font_size(get_display_fonts(self.config)[0]))
@@ -43,7 +47,7 @@ class SettingsWindow(tk.Toplevel):
         tk.Label(self, text="次字体:").grid(row=3, column=0, sticky=tk.W)
         self.font_secondary_family = tk.StringVar(value=self.parse_font_family(get_display_fonts(self.config)[1]))
         self.font_secondary_family_menu = tk.OptionMenu(self, self.font_secondary_family, *COMMON_FONTS)
-        self.font_secondary_family_menu.grid(row=3, column=1, sticky=tk.EW)
+        self.font_secondary_family_menu.grid(row=3, column=1, columnspan=2, sticky=tk.EW)
 
         tk.Label(self, text="次字体大小:").grid(row=4, column=0, sticky=tk.W)
         self.font_secondary_size = tk.StringVar(value=self.parse_font_size(get_display_fonts(self.config)[1]))
@@ -85,7 +89,7 @@ class SettingsWindow(tk.Toplevel):
         self.switch_mode_menu = tk.OptionMenu(self, self.switch_mode_var, *self.switch_mode_options.keys())
         self.switch_mode_menu.grid(row=11, column=1, columnspan=2, sticky=tk.EW)
 
-        tk.Button(self, text="保存", command=self.save_settings).grid(row=12, column=0, columnspan=3, sticky=tk.EW)
+        tk.Button(self, text="保存", command=self.save_settings).grid(row=12, column=0, columnspan=4, sticky=tk.EW)
 
         self.grid_columnconfigure(1, weight=1)
 
@@ -104,6 +108,16 @@ class SettingsWindow(tk.Toplevel):
         color_code = colorchooser.askcolor(title="选择文字颜色")[1]
         if color_code:
             self.fg_color_button.config(fg=color_code)
+
+    def browse_folder(self):
+        folder_selected = filedialog.askdirectory(title="请选择含有txt的文件夹")
+        if folder_selected:
+            self.folder_path_entry.delete(0, tk.END)
+            self.folder_path_entry.insert(0, folder_selected)
+
+    def reset_folder_path(self):
+        self.folder_path_entry.delete(0, tk.END)
+        self.folder_path_entry.insert(0, 'assets')
 
     def save_settings(self):
         primary_font = self.font_primary_family.get()
